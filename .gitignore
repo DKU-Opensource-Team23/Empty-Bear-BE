@@ -5,6 +5,19 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### application.yml ###
+application.yml
+src/main/resources/application.yml
+src/main/resources/application-dev.yml
+src/main/resources/application-local.yml
+src/main/resources/application-prod.yml
+*.pem
+
+### Docker / env ###
+.env
+.env.*
+!.env.example
+
 ### STS ###
 .apt_generated
 .classpath
@@ -35,3 +48,20 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+logs/
+*.log
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Build artifacts ###
+*.jar
+*.war
+*.ear
+
+#### Test ###
+coverage/
+*.exec
