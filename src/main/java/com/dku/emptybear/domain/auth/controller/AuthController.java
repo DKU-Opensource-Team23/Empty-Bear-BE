@@ -3,9 +3,11 @@ package com.dku.emptybear.domain.auth.controller;
 import com.dku.emptybear.domain.auth.dto.request.LoginRequestDto;
 import com.dku.emptybear.domain.auth.dto.request.SignupRequestDto;
 import com.dku.emptybear.domain.auth.dto.request.LogoutRequestDto;
+import com.dku.emptybear.domain.auth.dto.request.ReissueRequestDto;
 import com.dku.emptybear.domain.auth.dto.response.LoginResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.AuthMessageResponseDto;
+import com.dku.emptybear.domain.auth.dto.response.ReissueResponseDto;
 import com.dku.emptybear.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -53,5 +55,16 @@ public class AuthController {
             @Valid @RequestBody LogoutRequestDto request
     ) {
         return authService.logout(authorizationHeader, request);
+    }
+
+    @Operation(
+            summary = "액세스 토큰 재발급",
+            description = "리프레시 토큰을 검증한 뒤 새로운 액세스 토큰을 발급합니다."
+    )
+    @PostMapping("/reissue")
+    public ReissueResponseDto reissue(
+            @Valid @RequestBody ReissueRequestDto request
+    ) {
+        return authService.reissue(request);
     }
 }

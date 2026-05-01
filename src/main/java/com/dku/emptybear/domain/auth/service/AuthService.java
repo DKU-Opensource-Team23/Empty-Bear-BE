@@ -3,9 +3,11 @@ package com.dku.emptybear.domain.auth.service;
 import com.dku.emptybear.domain.auth.dto.request.LoginRequestDto;
 import com.dku.emptybear.domain.auth.dto.request.LogoutRequestDto;
 import com.dku.emptybear.domain.auth.dto.request.SignupRequestDto;
+import com.dku.emptybear.domain.auth.dto.request.ReissueRequestDto;
 import com.dku.emptybear.domain.auth.dto.response.AuthMessageResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.LoginResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
+import com.dku.emptybear.domain.auth.dto.response.ReissueResponseDto;
 import com.dku.emptybear.domain.auth.jwt.JwtTokenProvider;
 import com.dku.emptybear.domain.user.entity.User;
 import com.dku.emptybear.domain.user.repository.UserRepository;
@@ -148,5 +150,32 @@ public class AuthService {
         }
 
         return normalizedToken;
+    }
+
+    public ReissueResponseDto reissue(ReissueRequestDto request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (user.getRefreshToken() == null) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        if (!user.getRefreshToken().equals(refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(user);
+
+        return ReissueResponseDto.builder()
+                .accessToken(newAccessToken)
+                .build();
     }
 }
