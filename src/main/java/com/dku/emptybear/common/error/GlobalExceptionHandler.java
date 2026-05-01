@@ -1,5 +1,6 @@
 package com.dku.emptybear.common.error;
 
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,14 +15,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException e
     ) {
-        String message = e.getBindingResult()
-                .getFieldErrors()
-                .get(0)
-                .getDefaultMessage();
-
         ErrorResponse response = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message(message)
+                .message(getValidationMessage(e))
                 .build();
 
         return ResponseEntity
@@ -55,5 +51,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
+    }
+
+    private String getValidationMessage(MethodArgumentNotValidException e) {
+        return e.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .findFirst()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .orElse("잘못된 요청입니다.");
     }
 }
