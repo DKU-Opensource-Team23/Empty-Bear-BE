@@ -14,13 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class AuthService {
+
+    private static final String INVALID_TOKEN_MESSAGE = "유효하지 않은 토큰입니다.";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -76,32 +77,32 @@ public class AuthService {
 
     public AuthMessageResponseDto logout(String authorizationHeader, LogoutRequestDto request) {
         String accessToken = extractToken(authorizationHeader);
-        String refreshToken = request.getRefreshToken();
+        String refreshToken = normalizeToken(request.getRefreshToken());
 
         if (!jwtTokenProvider.validateToken(accessToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         Long accessTokenUserId = jwtTokenProvider.getUserId(accessToken);
         Long refreshTokenUserId = jwtTokenProvider.getUserId(refreshToken);
 
         if (!Objects.equals(accessTokenUserId, refreshTokenUserId)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         User user = userRepository.findById(accessTokenUserId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         if (user.getRefreshToken() == null) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         if (!user.getRefreshToken().equals(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         user.clearRefreshToken();
@@ -126,10 +127,26 @@ public class AuthService {
     }
 
     private String extractToken(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        String normalizedHeader = normalizeToken(authorizationHeader);
+
+        if (normalizedHeader.isBlank()) {
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        return authorizationHeader.substring(7);
+        return normalizedHeader;
+    }
+
+    private String normalizeToken(String token) {
+        if (token == null) {
+            return "";
+        }
+
+        String normalizedToken = token.trim();
+
+        while (normalizedToken.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            normalizedToken = normalizedToken.substring(7).trim();
+        }
+
+        return normalizedToken;
     }
 }

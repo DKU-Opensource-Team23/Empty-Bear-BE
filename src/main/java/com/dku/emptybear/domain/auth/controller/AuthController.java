@@ -8,9 +8,8 @@ import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.AuthMessageResponseDto;
 import com.dku.emptybear.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,13 +46,9 @@ public class AuthController {
             summary = "로그아웃",
             description = "로그인된 사용자의 로그아웃을 처리하고, 리프레시 토큰을 무효화합니다."
     )
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     public AuthMessageResponseDto logout(
-            @Parameter(
-                description = "액세스 토큰",
-                example = "Bearer access-token-example",
-                in = ParameterIn.HEADER
-            )
             @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
             @Valid @RequestBody LogoutRequestDto request
     ) {
