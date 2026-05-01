@@ -25,7 +25,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
                                 "/webjars/**",
-                                "/api/auth/signup"
+                                "/api/auth/signup",
+                                "/api/auth/login"
                         ).permitAll()
                         .anyRequest().permitAll()
                 );

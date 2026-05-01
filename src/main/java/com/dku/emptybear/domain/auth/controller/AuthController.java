@@ -1,6 +1,8 @@
 package com.dku.emptybear.domain.auth.controller;
 
+import com.dku.emptybear.domain.auth.dto.request.LoginRequestDto;
 import com.dku.emptybear.domain.auth.dto.request.SignupRequestDto;
+import com.dku.emptybear.domain.auth.dto.response.LoginResponseDto;
 import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
 import com.dku.emptybear.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,5 +28,14 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public SignupResponseDto signup(@Valid @RequestBody SignupRequestDto request) {
         return authService.signup(request);
+    }
+
+    @Operation(
+            summary = "로그인",
+            description = "사용자 식별 정보와 비밀번호를 입력받아 로그인하고, 인증 토큰 및 사용자 기본 정보를 반환합니다."
+    )
+    @PostMapping("/login")
+    public LoginResponseDto login(@Valid @RequestBody LoginRequestDto request) {
+        return authService.login(request);
     }
 }
