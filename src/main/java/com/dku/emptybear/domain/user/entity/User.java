@@ -37,6 +37,9 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "refresh_token", length = 500)
+    private String refreshToken;
+
     @Builder
     public User(String loginId, String password, String nickname, String studentNumber, String department) {
         this.loginId = loginId;
@@ -49,5 +52,13 @@ public class User {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void clearRefreshToken() {
+        this.refreshToken = null;
     }
 }
