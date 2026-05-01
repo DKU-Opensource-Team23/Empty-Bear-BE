@@ -16,24 +16,25 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "login_id", nullable = false, length = 50)
+    @Column(name = "login_id", nullable = false, length = 50, unique = true)
     private String loginId;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "nickname", nullable = false, length = 50, unique = true)
     private String nickname;
 
-    @Column(name = "student_number", nullable = false, length = 20)
+    @Column(name = "student_number", nullable = false, length = 20, unique = true)
     private String studentNumber;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "department", nullable = false, length = 100)
     private String department;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
