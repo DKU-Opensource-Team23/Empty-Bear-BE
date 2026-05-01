@@ -78,7 +78,7 @@ public class AuthService {
     }
 
     public AuthMessageResponseDto logout(String authorizationHeader, LogoutRequestDto request) {
-        String accessToken = extractToken(authorizationHeader);
+        String accessToken = extractAccessToken(authorizationHeader);
         String refreshToken = normalizeToken(request.getRefreshToken());
 
         if (!jwtTokenProvider.validateToken(accessToken)) {
@@ -99,13 +99,7 @@ public class AuthService {
         User user = userRepository.findById(accessTokenUserId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (user.getRefreshToken() == null) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        if (!user.getRefreshToken().equals(refreshToken)) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
+        validateStoredRefreshToken(user, refreshToken);
 
         user.clearRefreshToken();
 
@@ -128,7 +122,7 @@ public class AuthService {
         }
     }
 
-    private String extractToken(String authorizationHeader) {
+    private String extractAccessToken(String authorizationHeader) {
         String normalizedHeader = normalizeToken(authorizationHeader);
 
         if (normalizedHeader.isBlank()) {
@@ -153,10 +147,10 @@ public class AuthService {
     }
 
     public ReissueResponseDto reissue(ReissueRequestDto request) {
-        String refreshToken = request.getRefreshToken();
+        String refreshToken = normalizeToken(request.getRefreshToken());
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
@@ -164,18 +158,18 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (user.getRefreshToken() == null) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
-
-        if (!user.getRefreshToken().equals(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
+        validateStoredRefreshToken(user, refreshToken);
 
         String newAccessToken = jwtTokenProvider.createAccessToken(user);
 
         return ReissueResponseDto.builder()
                 .accessToken(newAccessToken)
                 .build();
+    }
+
+    private void validateStoredRefreshToken(User user, String refreshToken) {
+        if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
+        }
     }
 }
