@@ -44,4 +44,9 @@ public class User {
         this.studentNumber = studentNumber;
         this.department = department;
     }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

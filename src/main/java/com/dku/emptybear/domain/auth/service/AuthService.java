@@ -28,7 +28,6 @@ public class AuthService {
                 .nickname(request.getNickname())
                 .studentNumber(request.getStudentNumber())
                 .department(request.getDepartment())
-                .createdAt(LocalDateTime.now())
                 .build();
 
         User savedUser = userRepository.save(user);
