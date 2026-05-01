@@ -1,4 +1,4 @@
-package com.emptybear.common.error;
+package com.dku.emptybear.common.error;
 
 import lombok.Builder;
 import lombok.Getter;

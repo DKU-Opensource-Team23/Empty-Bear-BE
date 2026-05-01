@@ -1,4 +1,4 @@
-package com.emptybear.common.error;
+package com.dku.emptybear.common.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

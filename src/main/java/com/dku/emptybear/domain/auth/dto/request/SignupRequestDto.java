@@ -1,4 +1,4 @@
-package com.emptybear.domain.auth.dto.request;
+package com.dku.emptybear.domain.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

@@ -1,8 +1,8 @@
-package com.emptybear.domain.auth.controller;
+package com.dku.emptybear.domain.auth.controller;
 
-import com.emptybear.domain.auth.dto.request.SignupRequestDto;
-import com.emptybear.domain.auth.dto.response.SignupResponseDto;
-import com.emptybear.domain.auth.service.AuthService;
+import com.dku.emptybear.domain.auth.dto.request.SignupRequestDto;
+import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
+import com.dku.emptybear.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

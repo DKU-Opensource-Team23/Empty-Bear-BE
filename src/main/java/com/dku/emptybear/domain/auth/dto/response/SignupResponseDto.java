@@ -1,4 +1,4 @@
-package com.emptybear.domain.auth.dto.response;
+package com.dku.emptybear.domain.auth.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

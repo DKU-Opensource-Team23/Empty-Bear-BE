@@ -1,6 +1,6 @@
-package com.emptybear.domain.user.repository;
+package com.dku.emptybear.domain.user.repository;
 
-import com.emptybear.domain.user.entity.User;
+import com.dku.emptybear.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

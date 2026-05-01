@@ -1,4 +1,4 @@
-package com.emptybear.domain.user.entity;
+package com.dku.emptybear.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

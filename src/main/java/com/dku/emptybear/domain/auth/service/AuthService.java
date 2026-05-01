@@ -1,9 +1,9 @@
-package com.emptybear.domain.auth.service;
+package com.dku.emptybear.domain.auth.service;
 
-import com.emptybear.domain.auth.dto.request.SignupRequestDto;
-import com.emptybear.domain.auth.dto.response.SignupResponseDto;
-import com.emptybear.domain.user.entity.User;
-import com.emptybear.domain.user.repository.UserRepository;
+import com.dku.emptybear.domain.auth.dto.request.SignupRequestDto;
+import com.dku.emptybear.domain.auth.dto.response.SignupResponseDto;
+import com.dku.emptybear.domain.user.entity.User;
+import com.dku.emptybear.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
