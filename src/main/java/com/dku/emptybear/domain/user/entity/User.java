@@ -61,4 +61,18 @@ public class User {
     public void clearRefreshToken() {
         this.refreshToken = null;
     }
+
+    public void updateProfile(String nickname, String studentNumber, String department) {
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (studentNumber != null) {
+            this.studentNumber = studentNumber;
+        }
+
+        if (department != null) {
+            this.department = department;
+        }
+    }
 }
