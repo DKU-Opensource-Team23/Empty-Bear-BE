@@ -28,7 +28,7 @@ public class User {
     @Column(name = "nickname", nullable = false, length = 50, unique = true)
     private String nickname;
 
-    @Column(name = "student_number", nullable = false, length = 20, unique = true)
+    @Column(name = "student_number", nullable = false, length = 8, unique = true)
     private String studentNumber;
 
     @Column(name = "department", nullable = false, length = 100)
@@ -60,5 +60,19 @@ public class User {
 
     public void clearRefreshToken() {
         this.refreshToken = null;
+    }
+
+    public void updateProfile(String nickname, String studentNumber, String department) {
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (studentNumber != null) {
+            this.studentNumber = studentNumber;
+        }
+
+        if (department != null) {
+            this.department = department;
+        }
     }
 }
