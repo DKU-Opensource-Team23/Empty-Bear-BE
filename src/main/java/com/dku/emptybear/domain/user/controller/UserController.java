@@ -39,7 +39,7 @@ public class UserController {
     @PatchMapping("/me")
     public UpdateMyInfoResponseDto updateMyInfo(
             @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
-            @RequestBody UpdateMyInfoRequestDto request
+            @Valid @RequestBody UpdateMyInfoRequestDto request
     ) {
         return userService.updateMyInfo(authorizationHeader, request);
     }
