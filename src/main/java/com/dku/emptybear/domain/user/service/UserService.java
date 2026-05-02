@@ -43,10 +43,11 @@ public class UserService {
     ) {
         Long userId = getUserIdFromAuthorizationHeader(authorizationHeader);
 
+        validateUpdateRequest(request);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        validateUpdateRequest(request);
         validateDuplicateForUpdate(user, request);
 
         user.updateProfile(
@@ -82,9 +83,10 @@ public class UserService {
         }
 
         String accessToken = authorizationHeader.trim();
+        String bearerPrefix = "Bearer ";
 
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7).trim();
+        while (accessToken.regionMatches(true, 0, bearerPrefix, 0, bearerPrefix.length())) {
+            accessToken = accessToken.substring(bearerPrefix.length()).trim();
         }
 
         if (accessToken.isBlank()) {
