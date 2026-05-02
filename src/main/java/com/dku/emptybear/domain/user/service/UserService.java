@@ -15,14 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private static final String INVALID_TOKEN_MESSAGE = "유효하지 않은 토큰입니다.";
-
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public MyInfoResponseDto getMyInfo(String authorizationHeader) {
-        Long userId = getUserIdFromAuthorizationHeader(authorizationHeader);
-
+    public MyInfoResponseDto getMyInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
@@ -38,11 +33,9 @@ public class UserService {
 
     @Transactional
     public UpdateMyInfoResponseDto updateMyInfo(
-            String authorizationHeader,
+            Long userId,
             UpdateMyInfoRequestDto request
     ) {
-        Long userId = getUserIdFromAuthorizationHeader(authorizationHeader);
-
         validateUpdateRequest(request);
 
         User user = userRepository.findById(userId)
@@ -65,35 +58,6 @@ public class UserService {
                         .department(user.getDepartment())
                         .build())
                 .build();
-    }
-
-    private Long getUserIdFromAuthorizationHeader(String authorizationHeader) {
-        String accessToken = extractAccessToken(authorizationHeader);
-
-        if (!jwtTokenProvider.validateToken(accessToken)) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        return jwtTokenProvider.getUserId(accessToken);
-    }
-
-    private String extractAccessToken(String authorizationHeader) {
-        if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        String accessToken = authorizationHeader.trim();
-        String bearerPrefix = "Bearer ";
-
-        while (accessToken.regionMatches(true, 0, bearerPrefix, 0, bearerPrefix.length())) {
-            accessToken = accessToken.substring(bearerPrefix.length()).trim();
-        }
-
-        if (accessToken.isBlank()) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        return accessToken;
     }
 
     private void validateUpdateRequest(UpdateMyInfoRequestDto request) {

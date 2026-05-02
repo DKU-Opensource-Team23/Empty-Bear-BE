@@ -77,11 +77,10 @@ public class AuthService {
                 .build();
     }
 
-    public AuthMessageResponseDto logout(String authorizationHeader, LogoutRequestDto request) {
-        String accessToken = extractAccessToken(authorizationHeader);
+    public AuthMessageResponseDto logout(Long userId, LogoutRequestDto request) {
         String refreshToken = normalizeToken(request.getRefreshToken());
 
-        if (!jwtTokenProvider.validateToken(accessToken)) {
+        if (refreshToken.isBlank()) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
@@ -89,14 +88,13 @@ public class AuthService {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        Long accessTokenUserId = jwtTokenProvider.getUserId(accessToken);
         Long refreshTokenUserId = jwtTokenProvider.getUserId(refreshToken);
 
-        if (!Objects.equals(accessTokenUserId, refreshTokenUserId)) {
+        if (!userId.equals(refreshTokenUserId)) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        User user = userRepository.findById(accessTokenUserId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         validateStoredRefreshToken(user, refreshToken);
