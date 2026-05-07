@@ -19,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String TOKEN_ERROR_ATTRIBUTE = "tokenError";
+
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
@@ -32,16 +34,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = extractToken(request);
 
-        if (token != null && jwtTokenProvider.validateAccessToken(token)) {
-            Long userId = jwtTokenProvider.getUserIdFromValidAccessToken(token);
+        if (token != null) {
+            try {
+                Long userId = jwtTokenProvider.getUserIdFromValidAccessToken(token);
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    String.valueOf(userId),
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        String.valueOf(userId),
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (RuntimeException e) {
+                request.setAttribute(TOKEN_ERROR_ATTRIBUTE, true);
+            }
         }
 
         filterChain.doFilter(request, response);

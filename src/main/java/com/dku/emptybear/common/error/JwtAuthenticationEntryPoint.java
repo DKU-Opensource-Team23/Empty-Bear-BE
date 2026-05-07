@@ -1,5 +1,6 @@
 package com.dku.emptybear.common.error;
 
+import com.dku.emptybear.domain.auth.jwt.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,9 +24,17 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException {
+        boolean hasTokenError = Boolean.TRUE.equals(
+                request.getAttribute(JwtAuthenticationFilter.TOKEN_ERROR_ATTRIBUTE)
+        );
+
+        String message = hasTokenError
+                ? "유효하지 않거나 만료된 토큰입니다."
+                : "인증이 필요합니다.";
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.UNAUTHORIZED.value())
-                .message("인증이 필요합니다.")
+                .message(message)
                 .build();
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
