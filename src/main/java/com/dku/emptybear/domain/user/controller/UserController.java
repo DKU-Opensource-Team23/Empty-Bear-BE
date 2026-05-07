@@ -39,7 +39,7 @@ public class UserController {
     @PatchMapping("/me")
     public UpdateMyInfoResponseDto updateMyInfo(
             Authentication authentication,
-            @RequestBody UpdateMyInfoRequestDto request
+            @Valid @RequestBody UpdateMyInfoRequestDto request
     ) {
         Long userId = Long.valueOf(authentication.getName());
         return userService.updateMyInfo(userId, request);
