@@ -16,6 +16,10 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
+    private static final String TOKEN_TYPE_CLAIM = "tokenType";
+    private static final String ACCESS_TOKEN_TYPE = "ACCESS";
+    private static final String REFRESH_TOKEN_TYPE = "REFRESH";
+
     @Value("${jwt.secret}")
     private String secret;
 
@@ -40,6 +44,7 @@ public class JwtTokenProvider {
                 .subject(String.valueOf(user.getUserId()))
                 .claim("loginId", user.getLoginId())
                 .claim("nickname", user.getNickname())
+                .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(secretKey)
@@ -52,23 +57,48 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(user.getUserId()))
+                .claim(TOKEN_TYPE_CLAIM, REFRESH_TOKEN_TYPE)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateAccessToken(String token) {
         try {
-            getClaims(token);
-            return true;
+            Claims claims = getClaims(token);
+            return ACCESS_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class));
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
-    public Long getUserId(String token) {
+    public boolean validateRefreshToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+            return REFRESH_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class));
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public Long getUserIdFromValidAccessToken(String token) {
         Claims claims = getClaims(token);
+
+        if (!ACCESS_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
+        return Long.valueOf(claims.getSubject());
+    }
+
+    public Long getUserIdFromValidRefreshToken(String token) {
+        Claims claims = getClaims(token);
+
+        if (!REFRESH_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
         return Long.valueOf(claims.getSubject());
     }
 

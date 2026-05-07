@@ -16,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -77,26 +75,20 @@ public class AuthService {
                 .build();
     }
 
-    public AuthMessageResponseDto logout(String authorizationHeader, LogoutRequestDto request) {
-        String accessToken = extractAccessToken(authorizationHeader);
+    public AuthMessageResponseDto logout(Long userId, LogoutRequestDto request) {
         String refreshToken = normalizeToken(request.getRefreshToken());
 
-        if (!jwtTokenProvider.validateToken(accessToken)) {
+        if (refreshToken.isBlank()) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
+        Long refreshTokenUserId = getUserIdFromRefreshToken(refreshToken);
+
+        if (!userId.equals(refreshTokenUserId)) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        Long accessTokenUserId = jwtTokenProvider.getUserId(accessToken);
-        Long refreshTokenUserId = jwtTokenProvider.getUserId(refreshToken);
-
-        if (!Objects.equals(accessTokenUserId, refreshTokenUserId)) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        User user = userRepository.findById(accessTokenUserId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         validateStoredRefreshToken(user, refreshToken);
@@ -122,16 +114,6 @@ public class AuthService {
         }
     }
 
-    private String extractAccessToken(String authorizationHeader) {
-        String normalizedHeader = normalizeToken(authorizationHeader);
-
-        if (normalizedHeader.isBlank()) {
-            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
-        }
-
-        return normalizedHeader;
-    }
-
     private String normalizeToken(String token) {
         if (token == null) {
             return "";
@@ -149,11 +131,11 @@ public class AuthService {
     public ReissueResponseDto reissue(ReissueRequestDto request) {
         String refreshToken = normalizeToken(request.getRefreshToken());
 
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
+        if (refreshToken.isBlank()) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        Long userId = getUserIdFromRefreshToken(refreshToken);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -169,6 +151,14 @@ public class AuthService {
 
     private void validateStoredRefreshToken(User user, String refreshToken) {
         if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+            throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
+        }
+    }
+
+    private Long getUserIdFromRefreshToken(String refreshToken) {
+        try {
+            return jwtTokenProvider.getUserIdFromValidRefreshToken(refreshToken);
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
     }

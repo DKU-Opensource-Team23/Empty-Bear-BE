@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @Tag(name = "Users", description = "사용자 관련 API")
 @RestController
@@ -25,10 +26,9 @@ public class UserController {
     )
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
-    public MyInfoResponseDto getMyInfo(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
-    ) {
-        return userService.getMyInfo(authorizationHeader);
+    public MyInfoResponseDto getMyInfo(Authentication authentication) {
+        Long userId = Long.valueOf(authentication.getName());
+        return userService.getMyInfo(userId);
     }
 
     @Operation(
@@ -38,9 +38,10 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/me")
     public UpdateMyInfoResponseDto updateMyInfo(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            Authentication authentication,
             @Valid @RequestBody UpdateMyInfoRequestDto request
     ) {
-        return userService.updateMyInfo(authorizationHeader, request);
+        Long userId = Long.valueOf(authentication.getName());
+        return userService.updateMyInfo(userId, request);
     }
 }

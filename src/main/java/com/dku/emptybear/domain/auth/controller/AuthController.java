@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @Tag(name = "Auth", description = "인증 관련 API")
 @RestController
@@ -51,10 +52,11 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     public AuthMessageResponseDto logout(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            Authentication authentication,
             @Valid @RequestBody LogoutRequestDto request
     ) {
-        return authService.logout(authorizationHeader, request);
+        Long userId = Long.valueOf(authentication.getName());
+        return authService.logout(userId, request);
     }
 
     @Operation(
