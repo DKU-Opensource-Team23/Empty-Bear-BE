@@ -3,6 +3,7 @@ package com.dku.emptybear.domain.user.controller;
 import com.dku.emptybear.domain.user.dto.request.UpdateMyInfoRequestDto;
 import com.dku.emptybear.domain.user.dto.response.MyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UpdateMyInfoResponseDto;
+import com.dku.emptybear.domain.user.dto.response.UserPreferenceResponseDto;
 import com.dku.emptybear.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -43,5 +44,16 @@ public class UserController {
     ) {
         Long userId = Long.valueOf(authentication.getName());
         return userService.updateMyInfo(userId, request);
+    }
+
+    @Operation(
+            summary = "기본 선호 설정 조회",
+            description = "로그인한 사용자의 추천 기본값으로 사용할 선호 설정 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/me/preferences")
+    public UserPreferenceResponseDto getMyPreference(Authentication authentication) {
+        Long userId = Long.valueOf(authentication.getName());
+        return userService.getMyPreference(userId);
     }
 }

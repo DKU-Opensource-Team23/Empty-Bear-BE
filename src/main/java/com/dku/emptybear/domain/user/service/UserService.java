@@ -3,8 +3,11 @@ package com.dku.emptybear.domain.user.service;
 import com.dku.emptybear.domain.user.dto.request.UpdateMyInfoRequestDto;
 import com.dku.emptybear.domain.user.dto.response.MyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UpdateMyInfoResponseDto;
+import com.dku.emptybear.domain.user.dto.response.UserPreferenceResponseDto;
 import com.dku.emptybear.domain.user.entity.User;
+import com.dku.emptybear.domain.user.entity.UserPreference;
 import com.dku.emptybear.domain.user.repository.UserRepository;
+import com.dku.emptybear.domain.user.repository.UserPreferenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserPreferenceRepository userPreferenceRepository;
 
     public MyInfoResponseDto getMyInfo(Long userId) {
         User user = userRepository.findById(userId)
@@ -100,5 +104,43 @@ public class UserService {
         }
 
         return value.trim();
+    }
+
+    public UserPreferenceResponseDto getMyPreference(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        return userPreferenceRepository.findByUser_UserId(userId)
+                .map(this::toUserPreferenceResponse)
+                .orElseGet(this::emptyPreferenceResponse);
+    }
+
+    private UserPreferenceResponseDto toUserPreferenceResponse(UserPreference userPreference) {
+        UserPreferenceResponseDto.PreferredBuildingDto preferredBuilding = null;
+
+        if (userPreference.getPreferredBuilding() != null) {
+            preferredBuilding = UserPreferenceResponseDto.PreferredBuildingDto.builder()
+                    .buildingId(userPreference.getPreferredBuilding().getBuildingId())
+                    .buildingName(userPreference.getPreferredBuilding().getBuildingName())
+                    .build();
+        }
+
+        return UserPreferenceResponseDto.builder()
+                .preference(UserPreferenceResponseDto.PreferenceDto.builder()
+                        .preferredBuilding(preferredBuilding)
+                        .minAvailableTime(userPreference.getMinAvailableTime())
+                        .needOutlet(userPreference.getNeedOutlet())
+                        .build())
+                .build();
+    }
+
+    private UserPreferenceResponseDto emptyPreferenceResponse() {
+        return UserPreferenceResponseDto.builder()
+                .preference(UserPreferenceResponseDto.PreferenceDto.builder()
+                        .preferredBuilding(null)
+                        .minAvailableTime(null)
+                        .needOutlet(null)
+                        .build())
+                .build();
     }
 }
