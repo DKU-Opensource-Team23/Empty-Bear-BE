@@ -1,6 +1,5 @@
 package com.dku.emptybear.domain.user.service;
 
-import com.dku.emptybear.domain.auth.jwt.JwtTokenProvider;
 import com.dku.emptybear.domain.user.dto.request.UpdateMyInfoRequestDto;
 import com.dku.emptybear.domain.user.dto.response.MyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UpdateMyInfoResponseDto;
