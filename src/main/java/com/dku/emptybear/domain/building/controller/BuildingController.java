@@ -2,6 +2,7 @@ package com.dku.emptybear.domain.building.controller;
 
 import com.dku.emptybear.domain.building.dto.response.BuildingListResponseDto;
 import com.dku.emptybear.domain.building.dto.response.FloorListResponseDto;
+import com.dku.emptybear.domain.building.dto.response.FloorPlanResponseDto;
 import com.dku.emptybear.domain.building.service.BuildingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,5 +40,21 @@ public class BuildingController {
             @PathVariable Long buildingId
     ) {
         return buildingService.getFloors(buildingId);
+    }
+
+    @Operation(
+            summary = "층별 평면도 조회",
+            description = "특정 건물의 선택한 층에 대한 평면도 이미지 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{buildingId}/floors/{floorValue}/floor-plan")
+    public FloorPlanResponseDto getFloorPlan(
+            @Parameter(description = "평면도를 조회할 건물 ID", example = "1")
+            @PathVariable Long buildingId,
+
+            @Parameter(description = "평면도를 조회할 층의 내부 값", example = "-1")
+            @PathVariable Integer floorValue
+    ) {
+        return buildingService.getFloorPlan(buildingId, floorValue);
     }
 }
