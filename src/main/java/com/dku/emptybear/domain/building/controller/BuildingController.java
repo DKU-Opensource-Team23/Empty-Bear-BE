@@ -1,6 +1,7 @@
 package com.dku.emptybear.domain.building.controller;
 
 import com.dku.emptybear.domain.building.dto.response.BuildingListResponseDto;
+import com.dku.emptybear.domain.building.dto.response.FloorClassroomStatusResponseDto;
 import com.dku.emptybear.domain.building.dto.response.FloorListResponseDto;
 import com.dku.emptybear.domain.building.dto.response.FloorPlanResponseDto;
 import com.dku.emptybear.domain.building.service.BuildingService;
@@ -56,5 +57,21 @@ public class BuildingController {
             @PathVariable Integer floorValue
     ) {
         return buildingService.getFloorPlan(buildingId, floorValue);
+    }
+
+    @Operation(
+            summary = "해당 층 강의실 상태 조회",
+            description = "특정 건물의 선택한 층에 위치한 강의실들의 평면도 표시 좌표와 현재 사용 상태 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{buildingId}/floors/{floorValue}/classrooms/status")
+    public FloorClassroomStatusResponseDto getClassroomStatuses(
+            @Parameter(description = "강의실 상태를 조회할 건물 ID", example = "1")
+            @PathVariable Long buildingId,
+
+            @Parameter(description = "강의실 상태를 조회할 층의 내부 값", example = "5")
+            @PathVariable Integer floorValue
+    ) {
+        return buildingService.getClassroomStatuses(buildingId, floorValue);
     }
 }
