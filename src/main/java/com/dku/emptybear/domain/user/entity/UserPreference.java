@@ -31,4 +31,42 @@ public class UserPreference {
     private Boolean needOutlet;
 
     private LocalDateTime updatedAt;
+
+    public static UserPreference create(
+            User user,
+            Building preferredBuilding,
+            Integer minAvailableTime,
+            Boolean needOutlet
+    ) {
+        UserPreference userPreference = new UserPreference();
+        userPreference.user = user;
+        userPreference.preferredBuilding = preferredBuilding;
+        userPreference.minAvailableTime = minAvailableTime;
+        userPreference.needOutlet = needOutlet;
+        return userPreference;
+    }
+
+    public void update(
+            Building preferredBuilding,
+            Integer minAvailableTime,
+            Boolean needOutlet
+    ) {
+        if (preferredBuilding != null) {
+            this.preferredBuilding = preferredBuilding;
+        }
+
+        if (minAvailableTime != null) {
+            this.minAvailableTime = minAvailableTime;
+        }
+
+        if (needOutlet != null) {
+            this.needOutlet = needOutlet;
+        }
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void updateTimestamp() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

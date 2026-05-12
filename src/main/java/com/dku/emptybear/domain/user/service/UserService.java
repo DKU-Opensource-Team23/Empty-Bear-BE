@@ -4,10 +4,13 @@ import com.dku.emptybear.domain.user.dto.request.UpdateMyInfoRequestDto;
 import com.dku.emptybear.domain.user.dto.response.MyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UpdateMyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UserPreferenceResponseDto;
+import com.dku.emptybear.domain.user.dto.request.UpdateUserPreferenceRequestDto;
 import com.dku.emptybear.domain.user.entity.User;
 import com.dku.emptybear.domain.user.entity.UserPreference;
+import com.dku.emptybear.domain.building.entity.Building;
 import com.dku.emptybear.domain.user.repository.UserRepository;
 import com.dku.emptybear.domain.user.repository.UserPreferenceRepository;
+import com.dku.emptybear.domain.building.repository.BuildingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserPreferenceRepository userPreferenceRepository;
+    private final BuildingRepository buildingRepository;
 
     public MyInfoResponseDto getMyInfo(Long userId) {
         User user = userRepository.findById(userId)
@@ -142,5 +146,57 @@ public class UserService {
                         .needOutlet(null)
                         .build())
                 .build();
+    }
+
+    @Transactional
+    public UserPreferenceResponseDto updateMyPreference(
+            Long userId,
+            UpdateUserPreferenceRequestDto request
+    ) {
+        validatePreferenceUpdateRequest(request);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Building preferredBuilding = getPreferredBuilding(request.getPreferredBuildingId());
+
+        UserPreference userPreference = userPreferenceRepository.findByUser_UserId(userId)
+                .orElse(null);
+
+        if (userPreference == null) {
+            userPreference = UserPreference.create(
+                    user,
+                    preferredBuilding,
+                    request.getMinAvailableTime(),
+                    request.getNeedOutlet()
+            );
+
+            userPreferenceRepository.save(userPreference);
+        } else {
+            userPreference.update(
+                    preferredBuilding,
+                    request.getMinAvailableTime(),
+                    request.getNeedOutlet()
+            );
+        }
+
+        return toUserPreferenceResponse(userPreference);
+    }
+
+    private void validatePreferenceUpdateRequest(UpdateUserPreferenceRequestDto request) {
+        if (request.getPreferredBuildingId() == null
+                && request.getMinAvailableTime() == null
+                && request.getNeedOutlet() == null) {
+            throw new IllegalArgumentException("수정할 선호 설정 정보가 없습니다.");
+        }
+    }
+
+    private Building getPreferredBuilding(Long preferredBuildingId) {
+        if (preferredBuildingId == null) {
+            return null;
+        }
+
+        return buildingRepository.findById(preferredBuildingId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 건물입니다."));
     }
 }

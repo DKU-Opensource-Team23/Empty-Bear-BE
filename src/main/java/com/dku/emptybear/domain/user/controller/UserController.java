@@ -1,6 +1,7 @@
 package com.dku.emptybear.domain.user.controller;
 
 import com.dku.emptybear.domain.user.dto.request.UpdateMyInfoRequestDto;
+import com.dku.emptybear.domain.user.dto.request.UpdateUserPreferenceRequestDto;
 import com.dku.emptybear.domain.user.dto.response.MyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UpdateMyInfoResponseDto;
 import com.dku.emptybear.domain.user.dto.response.UserPreferenceResponseDto;
@@ -55,5 +56,19 @@ public class UserController {
     public UserPreferenceResponseDto getMyPreference(Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         return userService.getMyPreference(userId);
+    }
+
+    @Operation(
+            summary = "기본 선호 설정 수정",
+            description = "로그인한 사용자의 추천 기본값으로 사용할 선호 건물, 최소 사용 가능 시간, 콘센트 필요 여부를 수정합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @PatchMapping("/me/preferences")
+    public UserPreferenceResponseDto updateMyPreference(
+            Authentication authentication,
+            @Valid @RequestBody UpdateUserPreferenceRequestDto request
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+        return userService.updateMyPreference(userId, request);
     }
 }
