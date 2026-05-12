@@ -111,9 +111,6 @@ public class UserService {
     }
 
     public UserPreferenceResponseDto getMyPreference(Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
         return userPreferenceRepository.findByUser_UserId(userId)
                 .map(this::toUserPreferenceResponse)
                 .orElseGet(this::emptyPreferenceResponse);
