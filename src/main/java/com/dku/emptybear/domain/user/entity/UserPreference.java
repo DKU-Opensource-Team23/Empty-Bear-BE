@@ -16,6 +16,7 @@ public class UserPreference {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_preference_id")
     private Long userPreferenceId;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -26,10 +27,13 @@ public class UserPreference {
     @JoinColumn(name = "preferred_building_id")
     private Building preferredBuilding;
 
+    @Column(name = "min_available_time")
     private Integer minAvailableTime;
 
+    @Column(name = "need_outlet")
     private Boolean needOutlet;
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public static UserPreference create(
