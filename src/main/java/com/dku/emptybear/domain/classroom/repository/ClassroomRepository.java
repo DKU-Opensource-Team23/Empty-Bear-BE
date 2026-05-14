@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
@@ -28,4 +29,12 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
             @Param("floorValue") Integer floorValue,
             @Param("hasOutlet") Boolean hasOutlet
     );
+
+    @Query("""
+            SELECT c
+            FROM Classroom c
+            JOIN FETCH c.building b
+            WHERE c.classroomId = :classroomId
+            """)
+    Optional<Classroom> findByIdWithBuilding(@Param("classroomId") Long classroomId);
 }

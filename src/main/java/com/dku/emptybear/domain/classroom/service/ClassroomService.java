@@ -1,11 +1,14 @@
 package com.dku.emptybear.domain.classroom.service;
 
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
 import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
 import com.dku.emptybear.domain.classroom.repository.ClassroomRepository;
 import com.dku.emptybear.domain.classroom.repository.FavoriteRepository;
+import com.dku.emptybear.domain.classroom.repository.ReviewRepository;
+import com.dku.emptybear.domain.classroom.repository.ReviewTagRepository;
 import com.dku.emptybear.domain.classroom.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,8 @@ public class ClassroomService {
     private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
     private final FavoriteRepository favoriteRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReviewTagRepository reviewTagRepository;
 
     /**
      * 조건에 맞는 강의실 개요 목록을 조회한다.
@@ -101,6 +106,63 @@ public class ClassroomService {
 
         return ClassroomOverviewListResponseDto.builder()
                 .classrooms(result)
+                .build();
+    }
+
+    /**
+     * 특정 강의실의 상세 정보, 현재 사용 상태, 즐겨찾기 여부, 리뷰 요약 정보를 조회한다.
+     */
+    public ClassroomDetailResponseDto getClassroomDetail(Long userId, Long classroomId) {
+        Classroom classroom = classroomRepository.findByIdWithBuilding(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의실입니다."));
+
+        boolean isFavorite = favoriteRepository.existsByUser_UserIdAndClassroom_ClassroomId(
+                userId,
+                classroomId
+        );
+
+        List<Schedule> todaySchedules = scheduleRepository.findByClassroom_ClassroomIdAndDayOfWeekOrderByStartTimeAsc(
+                classroomId,
+                getTodayValue()
+        );
+
+        ClassroomAvailability availability = calculateAvailability(todaySchedules, LocalTime.now());
+
+        int totalReviewCount = Math.toIntExact(
+                reviewRepository.countByClassroom_ClassroomId(classroomId)
+        );
+
+        List<ClassroomDetailResponseDto.TagSummaryDto> tagSummaries =
+                reviewTagRepository.countTagsByClassroomId(classroomId)
+                        .stream()
+                        .map(tagCount -> ClassroomDetailResponseDto.TagSummaryDto.builder()
+                                .tagId(tagCount.getTagId())
+                                .code(tagCount.getCode())
+                                .displayName(tagCount.getDisplayName())
+                                .count(Math.toIntExact(tagCount.getCount()))
+                                .build())
+                        .toList();
+
+        return ClassroomDetailResponseDto.builder()
+                .classroom(ClassroomDetailResponseDto.ClassroomDetailDto.builder()
+                        .classroomId(classroom.getClassroomId())
+                        .building(ClassroomDetailResponseDto.BuildingInfoDto.builder()
+                                .buildingId(classroom.getBuilding().getBuildingId())
+                                .buildingName(classroom.getBuilding().getBuildingName())
+                                .build())
+                        .roomName(classroom.getRoomName())
+                        .floorValue(classroom.getFloor())
+                        .floorLabel(toFloorLabel(classroom.getFloor()))
+                        .hasOutlet(classroom.getHasOutlet())
+                        .isFavorite(isFavorite)
+                        .availabilityStatus(availability.status())
+                        .availableMinutes(availability.availableMinutes())
+                        .nextClassStartTime(formatTime(availability.nextClassStartTime()))
+                        .reviewSummary(ClassroomDetailResponseDto.ReviewSummaryDto.builder()
+                                .totalReviewCount(totalReviewCount)
+                                .tags(tagSummaries)
+                                .build())
+                        .build())
                 .build();
     }
 

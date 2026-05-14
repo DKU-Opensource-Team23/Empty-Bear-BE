@@ -1,5 +1,6 @@
 package com.dku.emptybear.domain.classroom.controller;
 
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +53,22 @@ public class ClassroomController {
                 availabilityStatus,
                 minAvailableTime
         );
+    }
+
+    @Operation(
+            summary = "강의실 상세 정보 조회",
+            description = "특정 강의실의 상세 정보, 현재 사용 상태, 리뷰 요약, 건물 위치 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{classroomId}")
+    public ClassroomDetailResponseDto getClassroomDetail(
+            Authentication authentication,
+
+            @Parameter(description = "상세 정보를 조회할 강의실 ID", example = "12")
+            @PathVariable Long classroomId
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.getClassroomDetail(userId, classroomId);
     }
 }

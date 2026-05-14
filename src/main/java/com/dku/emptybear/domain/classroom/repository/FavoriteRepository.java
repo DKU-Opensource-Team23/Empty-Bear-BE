@@ -12,4 +12,9 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
             Long userId,
             Collection<Long> classroomIds
     );
+
+    boolean existsByUser_UserIdAndClassroom_ClassroomId(
+            Long userId,
+            Long classroomId
+    );
 }
