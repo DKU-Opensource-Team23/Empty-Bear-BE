@@ -293,9 +293,11 @@ public class ClassroomService {
             }
         }
 
+        int availableMinutes = calculateMinutesBetween(now, END_OF_DAY);
+
         return new ClassroomAvailability(
-                "AVAILABLE_LONG",
-                calculateMinutesBetween(now, END_OF_DAY),
+                resolveAvailableStatus(availableMinutes),
+                availableMinutes,
                 null
         );
     }

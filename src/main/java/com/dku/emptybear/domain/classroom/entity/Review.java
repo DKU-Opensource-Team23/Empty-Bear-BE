@@ -37,4 +37,9 @@ public class Review {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

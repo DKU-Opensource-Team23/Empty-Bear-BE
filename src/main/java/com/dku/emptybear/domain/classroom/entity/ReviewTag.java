@@ -7,7 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "review_tag")
+@Table(
+        name = "review_tag",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_review_tag_review_tag",
+                columnNames = {"review_id", "tag_id"}
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReviewTag {

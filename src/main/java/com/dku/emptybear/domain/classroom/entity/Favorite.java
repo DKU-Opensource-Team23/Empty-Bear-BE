@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "favorite")
+@Table(
+        name = "favorite",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_favorite_user_classroom",
+                columnNames = {"user_id", "classroom_id"}
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Favorite {
