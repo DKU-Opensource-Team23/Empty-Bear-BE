@@ -12,4 +12,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             Collection<Long> classroomIds,
             String dayOfWeek
     );
+
+    List<Schedule> findByClassroom_ClassroomIdAndDayOfWeekOrderByStartTimeAsc(
+            Long classroomId,
+            String dayOfWeek
+    );
+
+    List<Schedule> findByClassroom_ClassroomId(Long classroomId);
 }
