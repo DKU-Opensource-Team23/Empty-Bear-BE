@@ -17,4 +17,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             Long classroomId,
             String dayOfWeek
     );
+
+    List<Schedule> findByClassroom_ClassroomId(Long classroomId);
 }

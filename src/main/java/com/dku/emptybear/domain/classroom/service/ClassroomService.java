@@ -2,6 +2,7 @@ package com.dku.emptybear.domain.classroom.service;
 
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
 import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
@@ -164,6 +165,56 @@ public class ClassroomService {
                                 .build())
                         .build())
                 .build();
+    }
+
+    /**
+     * 특정 강의실의 주간 시간표를 조회한다.
+     */
+    public ClassroomWeeklyScheduleResponseDto getWeeklySchedule(Long classroomId) {
+        classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의실입니다."));
+
+        List<Schedule> schedules = scheduleRepository.findByClassroom_ClassroomId(classroomId);
+
+        List<ClassroomWeeklyScheduleResponseDto.ScheduleInfoDto> weeklySchedule = schedules.stream()
+                // dayOfWeek는 문자열이므로 MON~SUN 순서가 보장되도록 직접 정렬한다.
+                .sorted(
+                        Comparator.comparingInt((Schedule schedule) -> getDayOfWeekOrder(schedule.getDayOfWeek()))
+                                .thenComparing(Schedule::getStartTime)
+                )
+                .map(schedule -> ClassroomWeeklyScheduleResponseDto.ScheduleInfoDto.builder()
+                        .scheduleId(schedule.getScheduleId())
+                        .dayOfWeek(schedule.getDayOfWeek())
+                        .startTime(formatTime(schedule.getStartTime()))
+                        .endTime(formatTime(schedule.getEndTime()))
+                        .subjectName(schedule.getSubjectName())
+                        .build())
+                .toList();
+
+        return ClassroomWeeklyScheduleResponseDto.builder()
+                .classroomId(classroomId)
+                .weeklySchedule(weeklySchedule)
+                .build();
+    }
+
+    /**
+     * 요일 문자열을 주간 정렬 순서로 변환한다.
+     */
+    private int getDayOfWeekOrder(String dayOfWeek) {
+        if (dayOfWeek == null) {
+            return 99;
+        }
+
+        return switch (dayOfWeek) {
+            case "MON" -> 1;
+            case "TUE" -> 2;
+            case "WED" -> 3;
+            case "THU" -> 4;
+            case "FRI" -> 5;
+            case "SAT" -> 6;
+            case "SUN" -> 7;
+            default -> 99;
+        };
     }
 
     /**

@@ -2,6 +2,7 @@ package com.dku.emptybear.domain.classroom.controller;
 
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -70,5 +71,18 @@ public class ClassroomController {
         Long userId = Long.valueOf(authentication.getName());
 
         return classroomService.getClassroomDetail(userId, classroomId);
+    }
+
+    @Operation(
+            summary = "강의실 주간 시간표 조회",
+            description = "특정 강의실의 주간 시간표 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{classroomId}/schedule")
+    public ClassroomWeeklyScheduleResponseDto getWeeklySchedule(
+            @Parameter(description = "시간표를 조회할 강의실 ID", example = "12")
+            @PathVariable Long classroomId
+    ) {
+        return classroomService.getWeeklySchedule(classroomId);
     }
 }
