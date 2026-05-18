@@ -1,8 +1,10 @@
 package com.dku.emptybear.domain.classroom.controller;
 
+import com.dku.emptybear.domain.classroom.dto.request.CreateReviewRequestDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @Tag(name = "Classrooms", description = "강의실 관련 API")
 @RestController
@@ -84,5 +88,24 @@ public class ClassroomController {
             @PathVariable Long classroomId
     ) {
         return classroomService.getWeeklySchedule(classroomId);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 작성",
+            description = "로그인한 사용자가 특정 강의실에 선택형 태그 기반 리뷰를 작성합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/{classroomId}/reviews")
+    public CreateReviewResponseDto createReview(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰를 작성할 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Valid @RequestBody CreateReviewRequestDto request
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.createReview(userId, classroomId, request);
     }
 }

@@ -30,4 +30,13 @@ public class ReviewTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
+
+    private ReviewTag(Review review, Tag tag) {
+        this.review = review;
+        this.tag = tag;
+    }
+
+    public static ReviewTag create(Review review, Tag tag) {
+        return new ReviewTag(review, tag);
+    }
 }

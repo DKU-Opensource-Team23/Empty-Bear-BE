@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "review")
+@Table(
+        name = "review",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_review_user_classroom",
+                columnNames = {"user_id", "classroom_id"}
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review {
@@ -32,6 +38,15 @@ public class Review {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private Review(User user, Classroom classroom) {
+        this.user = user;
+        this.classroom = classroom;
+    }
+
+    public static Review create(User user, Classroom classroom) {
+        return new Review(user, classroom);
+    }
 
     @PrePersist
     public void prePersist() {
