@@ -5,6 +5,7 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDt
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -107,5 +108,25 @@ public class ClassroomController {
         Long userId = Long.valueOf(authentication.getName());
 
         return classroomService.createReview(userId, classroomId, request);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 조회",
+            description = "특정 강의실에 작성된 리뷰 목록을 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{classroomId}/reviews")
+    public ClassroomReviewListResponseDto getClassroomReviews(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰 목록을 조회할 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Parameter(description = "조회할 리뷰 개수", example = "10")
+            @RequestParam(required = false) Integer limit
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.getClassroomReviews(userId, classroomId, limit);
     }
 }

@@ -5,6 +5,7 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDt
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
 import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
@@ -25,6 +26,8 @@ import com.dku.emptybear.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -261,6 +265,99 @@ public class ClassroomService {
                 .reviewId(review.getReviewId())
                 .message("리뷰가 등록되었습니다.")
                 .build();
+    }
+
+    /**
+     * 특정 강의실에 작성된 리뷰 목록과 로그인 사용자의 리뷰 ID를 조회한다.
+     */
+    public ClassroomReviewListResponseDto getClassroomReviews(
+            Long userId,
+            Long classroomId,
+            Integer limit
+    ) {
+        classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의실입니다."));
+
+        int reviewLimit = resolveReviewLimit(limit);
+
+        Pageable pageable = PageRequest.of(0, reviewLimit);
+
+        List<Review> reviews = reviewRepository.findReviewsByClassroomId(classroomId, pageable);
+
+        Optional<Review> myReview = reviewRepository.findByUser_UserIdAndClassroom_ClassroomId(
+                userId,
+                classroomId
+        );
+
+        List<Long> reviewIds = reviews.stream()
+                .map(Review::getReviewId)
+                .toList();
+
+        Map<Long, List<ReviewTag>> reviewTagMap = getReviewTagMap(reviewIds);
+
+        List<ClassroomReviewListResponseDto.ReviewInfoDto> reviewDtos = reviews.stream()
+                .map(review -> ClassroomReviewListResponseDto.ReviewInfoDto.builder()
+                        .reviewId(review.getReviewId())
+                        .user(ClassroomReviewListResponseDto.ReviewUserDto.builder()
+                                .userId(review.getUser().getUserId())
+                                .nickname(review.getUser().getNickname())
+                                .build())
+                        .tags(toReviewTagDtos(reviewTagMap.getOrDefault(
+                                review.getReviewId(),
+                                List.of()
+                        )))
+                        .createdAt(review.getCreatedAt())
+                        .build())
+                .toList();
+
+        return ClassroomReviewListResponseDto.builder()
+                .classroomId(classroomId)
+                .myReviewId(myReview.map(Review::getReviewId).orElse(null))
+                .reviews(reviewDtos)
+                .build();
+    }
+
+    /**
+     * limit 값이 없거나 유효하지 않은 경우 기본 조회 개수를 사용한다.
+     */
+    private int resolveReviewLimit(Integer limit) {
+        if (limit == null) {
+            return 10;
+        }
+
+        if (limit <= 0) {
+            throw new IllegalArgumentException("limit은 1 이상이어야 합니다.");
+        }
+
+        return limit;
+    }
+
+    /**
+     * 리뷰 ID 목록에 해당하는 태그들을 reviewId 기준으로 묶는다.
+     */
+    private Map<Long, List<ReviewTag>> getReviewTagMap(List<Long> reviewIds) {
+        if (reviewIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return reviewTagRepository.findByReviewIdsWithTag(reviewIds)
+                .stream()
+                .collect(Collectors.groupingBy(reviewTag -> reviewTag.getReview().getReviewId()));
+    }
+
+    /**
+     * ReviewTag 엔티티 목록을 리뷰 응답용 태그 DTO로 변환한다.
+     */
+    private List<ClassroomReviewListResponseDto.ReviewTagDto> toReviewTagDtos(
+            List<ReviewTag> reviewTags
+    ) {
+        return reviewTags.stream()
+                .map(reviewTag -> ClassroomReviewListResponseDto.ReviewTagDto.builder()
+                        .tagId(reviewTag.getTag().getTagId())
+                        .code(reviewTag.getTag().getCode())
+                        .displayName(reviewTag.getTag().getDisplayName())
+                        .build())
+                .toList();
     }
 
     /**
