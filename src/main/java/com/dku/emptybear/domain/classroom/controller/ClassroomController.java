@@ -6,6 +6,7 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResp
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -128,5 +129,25 @@ public class ClassroomController {
         Long userId = Long.valueOf(authentication.getName());
 
         return classroomService.getClassroomReviews(userId, classroomId, limit);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 삭제",
+            description = "로그인한 사용자가 자신이 작성한 특정 강의실 리뷰를 삭제합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{classroomId}/reviews/{reviewId}")
+    public DeleteReviewResponseDto deleteReview(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰가 속한 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Parameter(description = "삭제할 리뷰 ID", example = "31")
+            @PathVariable Long reviewId
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.deleteReview(userId, classroomId, reviewId);
     }
 }

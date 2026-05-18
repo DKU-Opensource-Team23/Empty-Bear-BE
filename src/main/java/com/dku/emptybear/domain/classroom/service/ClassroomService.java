@@ -6,6 +6,7 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResp
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
 import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
@@ -314,6 +315,32 @@ public class ClassroomService {
                 .classroomId(classroomId)
                 .myReviewId(myReview.map(Review::getReviewId).orElse(null))
                 .reviews(reviewDtos)
+                .build();
+    }
+    
+    /**
+     * 로그인 사용자가 자신이 작성한 강의실 리뷰를 삭제한다.
+     */
+    @Transactional
+    public DeleteReviewResponseDto deleteReview(
+            Long userId,
+            Long classroomId,
+            Long reviewId
+    ) {
+        Review review = reviewRepository.findByReviewIdAndClassroom_ClassroomIdAndUser_UserId(
+                reviewId,
+                classroomId,
+                userId
+        ).orElseThrow(() -> new IllegalArgumentException("삭제할 수 있는 리뷰가 존재하지 않습니다."));
+
+        // review_tag가 review를 참조하므로 매핑 데이터를 먼저 삭제한다.
+        reviewTagRepository.deleteByReview_ReviewId(reviewId);
+
+        reviewRepository.delete(review);
+
+        return DeleteReviewResponseDto.builder()
+                .reviewId(reviewId)
+                .classroomId(classroomId)
                 .build();
     }
 

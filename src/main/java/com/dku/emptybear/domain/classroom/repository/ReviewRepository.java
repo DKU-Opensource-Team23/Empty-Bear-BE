@@ -23,6 +23,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             Long classroomId
     );
 
+    Optional<Review> findByReviewIdAndClassroom_ClassroomIdAndUser_UserId(
+            Long reviewId,
+            Long classroomId,
+            Long userId
+    );
+
     @Query("""
             SELECT r
             FROM Review r

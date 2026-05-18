@@ -35,6 +35,8 @@ public interface ReviewTagRepository extends JpaRepository<ReviewTag, Long> {
             """)
     List<ReviewTag> findByReviewIdsWithTag(@Param("reviewIds") Collection<Long> reviewIds);
 
+    void deleteByReview_ReviewId(Long reviewId);
+
     interface TagCountProjection {
 
         Long getTagId();
