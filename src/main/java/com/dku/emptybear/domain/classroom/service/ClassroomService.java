@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -53,6 +54,8 @@ public class ClassroomService {
     private static final int AVAILABLE_LONG_THRESHOLD_MINUTES = 30;
     private static final LocalTime END_OF_DAY = LocalTime.of(23, 59);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final int DEFAULT_REVIEW_LIMIT = 10;
+    private static final int MAX_REVIEW_LIMIT = 50;
 
     private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
@@ -254,7 +257,13 @@ public class ClassroomService {
             throw new IllegalArgumentException("존재하지 않는 태그가 포함되어 있습니다.");
         }
 
-        Review review = reviewRepository.save(Review.create(user, classroom));
+        Review review;
+
+        try {
+            review = reviewRepository.saveAndFlush(Review.create(user, classroom));
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 해당 강의실에 리뷰를 작성했습니다.");
+        }
 
         List<ReviewTag> reviewTags = tags.stream()
                 .map(tag -> ReviewTag.create(review, tag))
@@ -345,15 +354,19 @@ public class ClassroomService {
     }
 
     /**
-     * limit 값이 없거나 유효하지 않은 경우 기본 조회 개수를 사용한다.
+     * limit 값이 없으면 기본 조회 개수를 사용하고, 0 이하 또는 최대값 초과이면 예외를 발생시킨다.
      */
     private int resolveReviewLimit(Integer limit) {
         if (limit == null) {
-            return 10;
+            return DEFAULT_REVIEW_LIMIT;
         }
 
         if (limit <= 0) {
             throw new IllegalArgumentException("limit은 1 이상이어야 합니다.");
+        }
+
+        if (limit > MAX_REVIEW_LIMIT) {
+            throw new IllegalArgumentException("limit은 최대 " + MAX_REVIEW_LIMIT + "까지 가능합니다.");
         }
 
         return limit;

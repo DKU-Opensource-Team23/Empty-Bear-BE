@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import jakarta.validation.Valid;
 
@@ -97,6 +98,7 @@ public class ClassroomController {
             description = "로그인한 사용자가 특정 강의실에 선택형 태그 기반 리뷰를 작성합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{classroomId}/reviews")
     public CreateReviewResponseDto createReview(
             Authentication authentication,
