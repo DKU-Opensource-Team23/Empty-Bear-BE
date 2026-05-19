@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +38,6 @@ public class FavoriteController {
             description = "로그인한 사용자가 특정 강의실을 즐겨찾기에 추가합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public FavoriteStatusResponseDto addFavorite(
             Authentication authentication,

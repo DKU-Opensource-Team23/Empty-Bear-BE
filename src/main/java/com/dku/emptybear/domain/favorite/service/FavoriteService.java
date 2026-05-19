@@ -123,10 +123,14 @@ public class FavoriteService {
         try {
             favoriteCommandService.addFavoriteInNewTransaction(user, classroom);
         } catch (DataIntegrityViolationException e) {
-            return FavoriteStatusResponseDto.builder()
-                    .classroomId(classroomId)
-                    .isFavorite(true)
-                    .build();
+            if (favoriteRepository.existsByUser_UserIdAndClassroom_ClassroomId(userId, classroomId)) {
+                return FavoriteStatusResponseDto.builder()
+                        .classroomId(classroomId)
+                        .isFavorite(true)
+                        .build();
+            }
+
+            throw e;
         }
 
         return FavoriteStatusResponseDto.builder()
