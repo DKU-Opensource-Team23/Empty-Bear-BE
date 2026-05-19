@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 @Tag(name = "Users", description = "사용자 관련 API")
 @RestController
@@ -38,6 +39,7 @@ public class FavoriteController {
             description = "로그인한 사용자가 특정 강의실을 즐겨찾기에 추가합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public FavoriteStatusResponseDto addFavorite(
             Authentication authentication,

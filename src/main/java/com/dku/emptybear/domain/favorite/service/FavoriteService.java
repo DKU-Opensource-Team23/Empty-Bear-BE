@@ -12,7 +12,6 @@ import com.dku.emptybear.domain.favorite.dto.response.FavoriteStatusResponseDto;
 import com.dku.emptybear.domain.favorite.dto.response.FavoriteClassroomListResponseDto;
 import com.dku.emptybear.domain.favorite.entity.Favorite;
 import com.dku.emptybear.domain.favorite.repository.FavoriteRepository;
-import com.dku.emptybear.domain.favorite.service.FavoriteCommandService;
 
 import com.dku.emptybear.domain.user.entity.User;
 import com.dku.emptybear.domain.user.repository.UserRepository;
@@ -20,7 +19,6 @@ import com.dku.emptybear.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -37,7 +35,6 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final ClassroomRepository classroomRepository;
     private final ClassroomAvailabilityService classroomAvailabilityService;
-    private final FavoriteCommandService favoriteCommandService;
 
     /**
      * 로그인 사용자가 즐겨찾기한 강의실 목록을 조회한다.
@@ -114,24 +111,10 @@ public class FavoriteService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의실입니다."));
 
         if (favoriteRepository.existsByUser_UserIdAndClassroom_ClassroomId(userId, classroomId)) {
-            return FavoriteStatusResponseDto.builder()
-                    .classroomId(classroomId)
-                    .isFavorite(true)
-                    .build();
+            throw new IllegalArgumentException("이미 즐겨찾기한 강의실입니다.");
         }
 
-        try {
-            favoriteCommandService.addFavoriteInNewTransaction(user, classroom);
-        } catch (DataIntegrityViolationException e) {
-            if (favoriteRepository.existsByUser_UserIdAndClassroom_ClassroomId(userId, classroomId)) {
-                return FavoriteStatusResponseDto.builder()
-                        .classroomId(classroomId)
-                        .isFavorite(true)
-                        .build();
-            }
-
-            throw e;
-        }
+        favoriteRepository.save(Favorite.create(user, classroom));
 
         return FavoriteStatusResponseDto.builder()
                 .classroomId(classroomId)
