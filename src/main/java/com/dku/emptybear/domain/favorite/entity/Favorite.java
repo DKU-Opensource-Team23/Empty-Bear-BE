@@ -37,6 +37,15 @@ public class Favorite {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    private Favorite(User user, Classroom classroom) {
+        this.user = user;
+        this.classroom = classroom;
+    }
+
+    public static Favorite create(User user, Classroom classroom) {
+        return new Favorite(user, classroom);
+    }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

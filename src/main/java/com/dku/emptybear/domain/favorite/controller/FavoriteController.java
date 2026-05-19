@@ -1,11 +1,15 @@
 package com.dku.emptybear.domain.favorite.controller;
 
+import com.dku.emptybear.domain.favorite.dto.request.AddFavoriteRequestDto;
+import com.dku.emptybear.domain.favorite.dto.response.FavoriteStatusResponseDto;
 import com.dku.emptybear.domain.favorite.dto.response.FavoriteClassroomListResponseDto;
 import com.dku.emptybear.domain.favorite.service.FavoriteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,5 +31,21 @@ public class FavoriteController {
         Long userId = Long.valueOf(authentication.getName());
 
         return favoriteService.getFavoriteClassrooms(userId);
+    }
+
+    @Operation(
+            summary = "즐겨찾기 추가",
+            description = "로그인한 사용자가 특정 강의실을 즐겨찾기에 추가합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public FavoriteStatusResponseDto addFavorite(
+            Authentication authentication,
+            @Valid @RequestBody AddFavoriteRequestDto request
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return favoriteService.addFavorite(userId, request);
     }
 }
