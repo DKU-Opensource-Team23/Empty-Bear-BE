@@ -133,4 +133,23 @@ public class FavoriteService {
                 .isFavorite(true)
                 .build();
     }
+
+    /**
+     * 로그인 사용자의 즐겨찾기 목록에서 특정 강의실을 삭제한다.
+     */
+    @Transactional
+    public FavoriteStatusResponseDto deleteFavorite(
+            Long userId,
+            Long classroomId
+    ) {
+        favoriteRepository.findByUser_UserIdAndClassroom_ClassroomId(
+                userId,
+                classroomId
+        ).ifPresent(favoriteRepository::delete);
+
+        return FavoriteStatusResponseDto.builder()
+                .classroomId(classroomId)
+                .isFavorite(false)
+                .build();
+    }
 }

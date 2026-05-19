@@ -7,6 +7,7 @@ import com.dku.emptybear.domain.favorite.service.FavoriteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -47,5 +48,22 @@ public class FavoriteController {
         Long userId = Long.valueOf(authentication.getName());
 
         return favoriteService.addFavorite(userId, request);
+    }
+
+    @Operation(
+            summary = "즐겨찾기 삭제",
+            description = "로그인한 사용자의 즐겨찾기 목록에서 특정 강의실을 삭제합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{classroomId}")
+    public FavoriteStatusResponseDto deleteFavorite(
+            Authentication authentication,
+
+            @Parameter(description = "즐겨찾기에서 삭제할 강의실 ID", example = "12")
+            @PathVariable Long classroomId
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return favoriteService.deleteFavorite(userId, classroomId);
     }
 }

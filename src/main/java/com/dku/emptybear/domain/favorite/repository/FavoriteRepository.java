@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
@@ -16,6 +17,11 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     );
 
     boolean existsByUser_UserIdAndClassroom_ClassroomId(
+            Long userId,
+            Long classroomId
+    );
+
+    Optional<Favorite> findByUser_UserIdAndClassroom_ClassroomId(
             Long userId,
             Long classroomId
     );
