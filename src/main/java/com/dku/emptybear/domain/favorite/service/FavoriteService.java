@@ -12,6 +12,7 @@ import com.dku.emptybear.domain.favorite.dto.response.FavoriteStatusResponseDto;
 import com.dku.emptybear.domain.favorite.dto.response.FavoriteClassroomListResponseDto;
 import com.dku.emptybear.domain.favorite.entity.Favorite;
 import com.dku.emptybear.domain.favorite.repository.FavoriteRepository;
+import com.dku.emptybear.domain.favorite.service.FavoriteCommandService;
 
 import com.dku.emptybear.domain.user.entity.User;
 import com.dku.emptybear.domain.user.repository.UserRepository;
@@ -36,6 +37,7 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final ClassroomRepository classroomRepository;
     private final ClassroomAvailabilityService classroomAvailabilityService;
+    private final FavoriteCommandService favoriteCommandService;
 
     /**
      * 로그인 사용자가 즐겨찾기한 강의실 목록을 조회한다.
@@ -119,9 +121,8 @@ public class FavoriteService {
         }
 
         try {
-            favoriteRepository.saveAndFlush(Favorite.create(user, classroom));
+            favoriteCommandService.addFavoriteInNewTransaction(user, classroom);
         } catch (DataIntegrityViolationException e) {
-            // 동시 요청으로 unique constraint가 발생해도 최종 상태는 즐겨찾기 true이므로 성공 응답을 반환한다.
             return FavoriteStatusResponseDto.builder()
                     .classroomId(classroomId)
                     .isFavorite(true)
