@@ -1,5 +1,6 @@
-package com.dku.emptybear.domain.classroom.entity;
+package com.dku.emptybear.domain.favorite.entity;
 
+import com.dku.emptybear.domain.classroom.entity.Classroom;
 import com.dku.emptybear.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

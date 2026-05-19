@@ -8,12 +8,10 @@ import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
-import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
 import com.dku.emptybear.domain.classroom.entity.Review;
 import com.dku.emptybear.domain.classroom.entity.ReviewTag;
 import com.dku.emptybear.domain.classroom.repository.ClassroomRepository;
-import com.dku.emptybear.domain.classroom.repository.FavoriteRepository;
 import com.dku.emptybear.domain.classroom.repository.ReviewRepository;
 import com.dku.emptybear.domain.classroom.repository.ReviewTagRepository;
 import com.dku.emptybear.domain.classroom.repository.ScheduleRepository;
@@ -23,6 +21,9 @@ import com.dku.emptybear.domain.tag.repository.TagRepository;
 
 import com.dku.emptybear.domain.user.entity.User;
 import com.dku.emptybear.domain.user.repository.UserRepository;
+
+import com.dku.emptybear.domain.favorite.entity.Favorite;
+import com.dku.emptybear.domain.favorite.repository.FavoriteRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
