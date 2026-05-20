@@ -1,8 +1,10 @@
 package com.dku.emptybear.domain.recommend.service;
 
 import com.dku.emptybear.domain.classroom.entity.Classroom;
+import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
 import com.dku.emptybear.domain.classroom.repository.ClassroomRepository;
+import com.dku.emptybear.domain.classroom.repository.FavoriteRepository;
 import com.dku.emptybear.domain.classroom.repository.ScheduleRepository;
 import com.dku.emptybear.domain.recommend.dto.request.RecommendRequestDto;
 import com.dku.emptybear.domain.recommend.dto.response.RecommendClassroomResponseDto;
@@ -17,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +32,11 @@ public class RecommendService {
 
     private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
+    private final FavoriteRepository favoriteRepository;
     private final AvailabilityService availabilityService;
 
     public List<RecommendClassroomResponseDto> recommendClassrooms(
+            Long userId,
             RecommendRequestDto request
     ) {
         RecommendCondition condition = RecommendCondition.from(request);
@@ -58,10 +63,13 @@ public class RecommendService {
                         .stream()
                         .collect(Collectors.groupingBy(schedule -> schedule.getClassroom().getClassroomId()));
 
+        Set<Long> favoriteClassroomIds = getFavoriteClassroomIds(userId, classroomIds);
+
         return classrooms.stream()
                 .map(classroom -> createCandidate(
                         classroom,
                         schedulesByClassroomId.getOrDefault(classroom.getClassroomId(), List.of()),
+                        favoriteClassroomIds.contains(classroom.getClassroomId()),
                         condition,
                         now
                 ))
@@ -75,6 +83,7 @@ public class RecommendService {
     private Optional<RecommendCandidate> createCandidate(
             Classroom classroom,
             List<Schedule> schedules,
+            boolean favorite,
             RecommendCondition condition,
             LocalDateTime now
     ) {
@@ -91,6 +100,8 @@ public class RecommendService {
 
         double score = calculateScore(
                 classroom.getRoomName(),
+                classroom.getHasOutlet(),
+                favorite,
                 availability.availableMinutes(),
                 condition
         );
@@ -101,8 +112,9 @@ public class RecommendService {
                         .buildingName(classroom.getBuilding().getBuildingName())
                         .roomName(classroom.getRoomName())
                         .floor(classroom.getFloor())
+                        .floorLabel(toFloorLabel(classroom.getFloor()))
                         .hasOutlet(classroom.getHasOutlet())
-                        .isFavorite(false)
+                        .isFavorite(favorite)
                         .availabilityStatus(availability.availabilityStatus())
                         .availableMinutes(availability.availableMinutes())
                         .nextClassStartTime(formatTime(availability))
@@ -114,6 +126,8 @@ public class RecommendService {
 
     private double calculateScore(
             String roomName,
+            Boolean hasOutlet,
+            boolean favorite,
             int availableMinutes,
             RecommendCondition condition
     ) {
@@ -123,9 +137,13 @@ public class RecommendService {
         );
 
         double roomScore = calculateRoomScore(roomName);
+        double outletScore = calculateOutletScore(hasOutlet, condition.needOutlet());
+        double favoriteScore = favorite ? 1.0 : 0.0;
 
-        return timeScore * 0.8
-                + roomScore * 0.2;
+        return timeScore * 0.65
+                + roomScore * 0.15
+                + outletScore * 0.1
+                + favoriteScore * 0.1;
     }
 
     private double calculateTimeScore(
@@ -144,6 +162,26 @@ public class RecommendService {
         return roomName == null || roomName.isBlank() ? 0.0 : 1.0;
     }
 
+    private double calculateOutletScore(Boolean hasOutlet, boolean needOutlet) {
+        if (!needOutlet) {
+            return 0.5;
+        }
+
+        return Boolean.TRUE.equals(hasOutlet) ? 1.0 : 0.0;
+    }
+
+    private Set<Long> getFavoriteClassroomIds(Long userId, List<Long> classroomIds) {
+        if (userId == null || classroomIds.isEmpty()) {
+            return Set.of();
+        }
+
+        return favoriteRepository.findByUser_UserIdAndClassroom_ClassroomIdIn(userId, classroomIds)
+                .stream()
+                .map(Favorite::getClassroom)
+                .map(Classroom::getClassroomId)
+                .collect(Collectors.toSet());
+    }
+
     private String formatTime(
             AvailabilityService.AvailabilityResult availability
     ) {
@@ -152,6 +190,18 @@ public class RecommendService {
         }
 
         return availability.nextClassStartTime().format(TIME_FORMATTER);
+    }
+
+    private String toFloorLabel(Integer floor) {
+        if (floor == null) {
+            return null;
+        }
+
+        if (floor < 0) {
+            return "B" + Math.abs(floor);
+        }
+
+        return floor + "F";
     }
 
     private String convertDayOfWeek(DayOfWeek dayOfWeek) {

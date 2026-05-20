@@ -1,5 +1,7 @@
 package com.dku.emptybear.domain.recommend.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,12 +9,13 @@ import lombok.Setter;
 @Setter
 public class RecommendRequestDto {
 
-    // 사용자가 선호하는 건물 ID
+    @Schema(description = "선호 건물 ID", example = "1", nullable = true)
     private Long preferredBuildingId;
 
-    // 사용자가 강의실을 사용하고 싶은 최소 시간, 단위: 분
+    @Schema(description = "최소 사용 가능 시간(분)", example = "30", nullable = true)
+    @Min(value = 0, message = "최소 사용 가능 시간은 0분 이상이어야 합니다.")
     private Integer minAvailableTime;
 
-    // 콘센트 필요 여부
+    @Schema(description = "콘센트 필요 여부", example = "true", nullable = true)
     private Boolean needOutlet;
 }
