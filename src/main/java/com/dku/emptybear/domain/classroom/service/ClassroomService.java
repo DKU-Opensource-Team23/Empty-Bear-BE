@@ -188,6 +188,7 @@ public class ClassroomService {
                         .startTime(formatTime(schedule.getStartTime()))
                         .endTime(formatTime(schedule.getEndTime()))
                         .subjectName(schedule.getSubjectName())
+                        .professorName(schedule.getProfessorName())
                         .build())
                 .toList();
 
