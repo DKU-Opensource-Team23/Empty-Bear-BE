@@ -45,7 +45,7 @@ public class RecommendService {
         String today = convertDayOfWeek(now.getDayOfWeek());
 
         List<Classroom> classrooms = classroomRepository.findClassroomsByFilters(
-                condition.preferredBuildingId(),
+                condition.buildingId(),
                 null,
                 condition.needOutlet() ? true : null
         );
@@ -94,7 +94,7 @@ public class RecommendService {
             return Optional.empty();
         }
 
-        if (availability.availableMinutes() < condition.minAvailableTime()) {
+        if (availability.availableMinutes() < condition.minAvailableMinutes()) {
             return Optional.empty();
         }
 
@@ -133,7 +133,7 @@ public class RecommendService {
     ) {
         double timeScore = calculateTimeScore(
                 availableMinutes,
-                condition.minAvailableTime()
+                condition.minAvailableMinutes()
         );
 
         double roomScore = calculateRoomScore(roomName);
@@ -223,24 +223,33 @@ public class RecommendService {
     }
 
     private record RecommendCondition(
-            Long preferredBuildingId,
-            int minAvailableTime,
+            Long buildingId,
+            int minAvailableMinutes,
             boolean needOutlet
     ) {
         static RecommendCondition from(RecommendRequestDto request) {
-            int minAvailableTime =
-                    request.getMinAvailableTime() == null
-                            ? 0
-                            : request.getMinAvailableTime();
+            int minAvailableMinutes = calculateMinAvailableMinutes(request);
 
             boolean needOutlet =
                     Boolean.TRUE.equals(request.getNeedOutlet());
 
             return new RecommendCondition(
-                    request.getPreferredBuildingId(),
-                    minAvailableTime,
+                    request.getBuildingId(),
+                    minAvailableMinutes,
                     needOutlet
             );
+        }
+
+        private static int calculateMinAvailableMinutes(RecommendRequestDto request) {
+            int hour = request.getMinAvailableHour() == null
+                    ? 0
+                    : request.getMinAvailableHour();
+
+            int minute = request.getMinAvailableMinute() == null
+                    ? 0
+                    : request.getMinAvailableMinute();
+
+            return hour * 60 + minute;
         }
     }
 }
