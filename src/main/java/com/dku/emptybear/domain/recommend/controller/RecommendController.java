@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @Tag(name = "Recommend", description = "강의실 추천 API")
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +28,7 @@ public class RecommendController {
             description = "현재 시간표 기준으로 사용 가능한 강의실을 조회하고, 요청 조건과 추천 점수에 따라 정렬합니다."
     )
     @GetMapping("/classrooms")
-    public ResponseEntity<List<RecommendClassroomResponseDto>> getRecommendedClassrooms(
+    public ResponseEntity<RecommendClassroomResponseDto> getRecommendedClassrooms(
             Authentication authentication,
 
             @Parameter(description = "추천 조건")
@@ -40,7 +38,7 @@ public class RecommendController {
                 ? null
                 : Long.valueOf(authentication.getName());
 
-        List<RecommendClassroomResponseDto> result =
+        RecommendClassroomResponseDto result =
                 recommendService.recommendClassrooms(userId, request);
 
         return ResponseEntity.ok(result);

@@ -35,7 +35,7 @@ public class RecommendService {
     private final FavoriteRepository favoriteRepository;
     private final AvailabilityService availabilityService;
 
-    public List<RecommendClassroomResponseDto> recommendClassrooms(
+    public RecommendClassroomResponseDto recommendClassrooms(
             Long userId,
             RecommendRequestDto request
     ) {
@@ -65,7 +65,7 @@ public class RecommendService {
 
         Set<Long> favoriteClassroomIds = getFavoriteClassroomIds(userId, classroomIds);
 
-        return classrooms.stream()
+        List<RecommendClassroomResponseDto.ClassroomDto> recommendedClassrooms = classrooms.stream()
                 .map(classroom -> createCandidate(
                         classroom,
                         schedulesByClassroomId.getOrDefault(classroom.getClassroomId(), List.of()),
@@ -78,6 +78,10 @@ public class RecommendService {
                 .sorted(Comparator.comparing(RecommendCandidate::score).reversed())
                 .map(RecommendCandidate::response)
                 .toList();
+
+        return RecommendClassroomResponseDto.builder()
+                .classrooms(recommendedClassrooms)
+                .build();
     }
 
     private Optional<RecommendCandidate> createCandidate(
@@ -106,19 +110,14 @@ public class RecommendService {
                 condition
         );
 
-        RecommendClassroomResponseDto response =
-                RecommendClassroomResponseDto.builder()
-                        .classroomId(classroom.getClassroomId())
+        RecommendClassroomResponseDto.ClassroomDto response =
+                RecommendClassroomResponseDto.ClassroomDto.builder()
                         .buildingName(classroom.getBuilding().getBuildingName())
-                        .roomName(classroom.getRoomName())
-                        .floor(classroom.getFloor())
-                        .floorLabel(toFloorLabel(classroom.getFloor()))
+                        .classroomName(classroom.getRoomName())
+                        .availableHour(toAvailableHour(availability.availableMinutes()))
+                        .availableMinute(toAvailableMinute(availability.availableMinutes()))
+                        .nextClassTime(formatTime(availability))
                         .hasOutlet(classroom.getHasOutlet())
-                        .isFavorite(favorite)
-                        .availabilityStatus(availability.availabilityStatus())
-                        .availableMinutes(availability.availableMinutes())
-                        .nextClassStartTime(formatTime(availability))
-                        .recommendationScore(score)
                         .build();
 
         return Optional.of(new RecommendCandidate(response, score));
@@ -192,16 +191,12 @@ public class RecommendService {
         return availability.nextClassStartTime().format(TIME_FORMATTER);
     }
 
-    private String toFloorLabel(Integer floor) {
-        if (floor == null) {
-            return null;
-        }
+    private int toAvailableHour(int availableMinutes) {
+        return availableMinutes / 60;
+    }
 
-        if (floor < 0) {
-            return "B" + Math.abs(floor);
-        }
-
-        return floor + "F";
+    private int toAvailableMinute(int availableMinutes) {
+        return availableMinutes % 60;
     }
 
     private String convertDayOfWeek(DayOfWeek dayOfWeek) {
@@ -217,7 +212,7 @@ public class RecommendService {
     }
 
     private record RecommendCandidate(
-            RecommendClassroomResponseDto response,
+            RecommendClassroomResponseDto.ClassroomDto response,
             double score
     ) {
     }
