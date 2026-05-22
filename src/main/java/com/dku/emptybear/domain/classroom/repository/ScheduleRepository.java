@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findByDayOfWeek(String dayOfWeek);
-
     List<Schedule> findByClassroom_ClassroomIdInAndDayOfWeekOrderByStartTimeAsc(
             Collection<Long> classroomIds,
             String dayOfWeek

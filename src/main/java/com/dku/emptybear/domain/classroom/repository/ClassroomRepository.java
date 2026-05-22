@@ -37,16 +37,4 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
             WHERE c.classroomId = :classroomId
             """)
     Optional<Classroom> findByIdWithBuilding(@Param("classroomId") Long classroomId);
-
-    @Query("""
-            SELECT c
-            FROM Classroom c
-            JOIN FETCH c.building b
-            WHERE b.buildingName LIKE CONCAT('%', :buildingName, '%')
-              AND c.roomName = :roomName
-            """)
-    Optional<Classroom> findByBuilding_BuildingNameContainingAndRoomName(
-            @Param("buildingName") String buildingName,
-            @Param("roomName") String roomName
-    );
 }

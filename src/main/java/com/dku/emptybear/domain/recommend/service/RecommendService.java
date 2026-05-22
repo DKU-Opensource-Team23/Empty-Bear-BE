@@ -244,7 +244,7 @@ public class RecommendService {
                     ? 0
                     : request.getMinAvailableMinute();
 
-            return hour * 60 + minute;
+            return Math.addExact(Math.multiplyExact(hour, 60), minute);
         }
     }
 }
