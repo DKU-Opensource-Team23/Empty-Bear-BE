@@ -34,5 +34,8 @@ public class ClassroomWeeklyScheduleResponseDto {
 
         @Schema(description = "수업명", example = "자료구조", nullable = true)
         private String subjectName;
+
+        @Schema(description = "교수명", example = "설진석", nullable = true)
+        private String professorName;
     }
 }

@@ -210,6 +210,7 @@ public class ClassroomService {
                         .startTime(classroomAvailabilityService.formatTime(schedule.getStartTime()))
                         .endTime(classroomAvailabilityService.formatTime(schedule.getEndTime()))
                         .subjectName(schedule.getSubjectName())
+                        .professorName(schedule.getProfessorName())
                         .build())
                 .toList();
 
@@ -326,7 +327,7 @@ public class ClassroomService {
                 .reviews(reviewDtos)
                 .build();
     }
-    
+
     /**
      * 로그인 사용자가 자신이 작성한 강의실 리뷰를 삭제한다.
      */

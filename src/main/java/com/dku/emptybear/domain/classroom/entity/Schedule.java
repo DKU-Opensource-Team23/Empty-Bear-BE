@@ -2,6 +2,7 @@ package com.dku.emptybear.domain.classroom.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,4 +34,24 @@ public class Schedule {
 
     @Column(name = "subject_name")
     private String subjectName;
+
+    @Column(name = "professor_name", length = 100)
+    private String professorName;
+
+    @Builder
+    public Schedule(
+            Classroom classroom,
+            String dayOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
+            String subjectName,
+            String professorName
+    ) {
+        this.classroom = classroom;
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.subjectName = subjectName;
+        this.professorName = professorName;
+    }
 }
