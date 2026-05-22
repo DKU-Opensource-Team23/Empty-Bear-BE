@@ -1,8 +1,12 @@
 package com.dku.emptybear.domain.classroom.controller;
 
+import com.dku.emptybear.domain.classroom.dto.request.CreateReviewRequestDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomDetailResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomOverviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+
+import jakarta.validation.Valid;
 
 @Tag(name = "Classrooms", description = "강의실 관련 API")
 @RestController
@@ -84,5 +91,65 @@ public class ClassroomController {
             @PathVariable Long classroomId
     ) {
         return classroomService.getWeeklySchedule(classroomId);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 작성",
+            description = "로그인한 사용자가 특정 강의실에 선택형 태그 기반 리뷰를 작성합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{classroomId}/reviews")
+    public CreateReviewResponseDto createReview(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰를 작성할 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Valid @RequestBody CreateReviewRequestDto request
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.createReview(userId, classroomId, request);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 조회",
+            description = "특정 강의실에 작성된 리뷰 목록을 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{classroomId}/reviews")
+    public ClassroomReviewListResponseDto getClassroomReviews(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰 목록을 조회할 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Parameter(description = "조회할 리뷰 개수", example = "10")
+            @RequestParam(required = false) Integer limit
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.getClassroomReviews(userId, classroomId, limit);
+    }
+
+    @Operation(
+            summary = "강의실 리뷰 삭제",
+            description = "로그인한 사용자가 자신이 작성한 특정 강의실 리뷰를 삭제합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{classroomId}/reviews/{reviewId}")
+    public DeleteReviewResponseDto deleteReview(
+            Authentication authentication,
+
+            @Parameter(description = "리뷰가 속한 강의실 ID", example = "12")
+            @PathVariable Long classroomId,
+
+            @Parameter(description = "삭제할 리뷰 ID", example = "31")
+            @PathVariable Long reviewId
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.deleteReview(userId, classroomId, reviewId);
     }
 }

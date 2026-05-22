@@ -1,11 +1,11 @@
 package com.dku.emptybear.domain.recommend.service;
 
 import com.dku.emptybear.domain.classroom.entity.Classroom;
-import com.dku.emptybear.domain.classroom.entity.Favorite;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
 import com.dku.emptybear.domain.classroom.repository.ClassroomRepository;
-import com.dku.emptybear.domain.classroom.repository.FavoriteRepository;
 import com.dku.emptybear.domain.classroom.repository.ScheduleRepository;
+import com.dku.emptybear.domain.favorite.entity.Favorite;
+import com.dku.emptybear.domain.favorite.repository.FavoriteRepository;
 import com.dku.emptybear.domain.recommend.dto.request.RecommendRequestDto;
 import com.dku.emptybear.domain.recommend.dto.response.RecommendClassroomResponseDto;
 import lombok.RequiredArgsConstructor;
