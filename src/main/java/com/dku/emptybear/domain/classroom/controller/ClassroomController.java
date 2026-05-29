@@ -7,6 +7,7 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleRe
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.RecentViewedClassroomListResponseDto;
 import com.dku.emptybear.domain.classroom.service.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -61,6 +62,20 @@ public class ClassroomController {
                 availabilityStatus,
                 minAvailableTime
         );
+    }
+
+    @Operation(
+            summary = "최근 조회한 강의실 목록 조회",
+            description = "로그인한 사용자가 최근 상세 조회한 강의실 목록을 최신순으로 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/recent-viewed")
+    public RecentViewedClassroomListResponseDto getRecentViewedClassrooms(
+            Authentication authentication
+    ) {
+        Long userId = Long.valueOf(authentication.getName());
+
+        return classroomService.getRecentViewedClassrooms(userId);
     }
 
     @Operation(

@@ -7,11 +7,14 @@ import com.dku.emptybear.domain.classroom.dto.response.ClassroomWeeklyScheduleRe
 import com.dku.emptybear.domain.classroom.dto.response.CreateReviewResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.ClassroomReviewListResponseDto;
 import com.dku.emptybear.domain.classroom.dto.response.DeleteReviewResponseDto;
+import com.dku.emptybear.domain.classroom.dto.response.RecentViewedClassroomListResponseDto;
 import com.dku.emptybear.domain.classroom.entity.Classroom;
+import com.dku.emptybear.domain.classroom.entity.ClassroomViewHistory;
 import com.dku.emptybear.domain.classroom.entity.Schedule;
 import com.dku.emptybear.domain.classroom.entity.Review;
 import com.dku.emptybear.domain.classroom.entity.ReviewTag;
 import com.dku.emptybear.domain.classroom.repository.ClassroomRepository;
+import com.dku.emptybear.domain.classroom.repository.ClassroomViewHistoryRepository;
 import com.dku.emptybear.domain.classroom.repository.ReviewRepository;
 import com.dku.emptybear.domain.classroom.repository.ReviewTagRepository;
 import com.dku.emptybear.domain.classroom.repository.ScheduleRepository;
@@ -53,6 +56,7 @@ public class ClassroomService {
     private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
     private final FavoriteRepository favoriteRepository;
+    private final ClassroomViewHistoryRepository classroomViewHistoryRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewTagRepository reviewTagRepository;
     private final UserRepository userRepository;
@@ -130,11 +134,74 @@ public class ClassroomService {
     }
 
     /**
+     * 로그인 사용자가 최근 조회한 강의실 목록을 최신순으로 조회한다.
+     */
+    public RecentViewedClassroomListResponseDto getRecentViewedClassrooms(Long userId) {
+        List<ClassroomViewHistory> histories =
+                classroomViewHistoryRepository.findByUserIdWithClassroomAndBuildingOrderByViewedAtDesc(userId);
+
+        List<Long> classroomIds = histories.stream()
+                .map(history -> history.getClassroom().getClassroomId())
+                .toList();
+
+        Set<Long> favoriteClassroomIds = getFavoriteClassroomIds(userId, classroomIds);
+
+        String today = classroomAvailabilityService.getTodayValue();
+        LocalTime now = LocalTime.now();
+
+        List<Schedule> schedules = classroomIds.isEmpty()
+                ? List.of()
+                : scheduleRepository.findByClassroom_ClassroomIdInAndDayOfWeekOrderByStartTimeAsc(
+                        classroomIds,
+                        today
+                );
+
+        Map<Long, List<Schedule>> scheduleMap = schedules.stream()
+                .collect(Collectors.groupingBy(schedule -> schedule.getClassroom().getClassroomId()));
+
+        List<RecentViewedClassroomListResponseDto.RecentViewedClassroomDto> classrooms = histories.stream()
+                .map(history -> {
+                    Classroom classroom = history.getClassroom();
+
+                    List<Schedule> classroomSchedules = scheduleMap.getOrDefault(
+                            classroom.getClassroomId(),
+                            List.of()
+                    );
+
+                    ClassroomAvailability availability = classroomAvailabilityService.calculateAvailability(
+                            classroomSchedules,
+                            now
+                    );
+
+                    return RecentViewedClassroomListResponseDto.RecentViewedClassroomDto.builder()
+                            .classroomId(classroom.getClassroomId())
+                            .buildingName(classroom.getBuilding().getBuildingName())
+                            .roomName(classroom.getRoomName())
+                            .floor(classroom.getFloor())
+                            .hasOutlet(classroom.getHasOutlet())
+                            .isFavorite(favoriteClassroomIds.contains(classroom.getClassroomId()))
+                            .availabilityStatus(availability.getStatus())
+                            .availableMinutes(availability.getAvailableMinutes())
+                            .nextClassStartTime(classroomAvailabilityService.formatTime(availability.getNextClassStartTime()))
+                            .viewedAt(history.getViewedAt())
+                            .build();
+                })
+                .toList();
+
+        return RecentViewedClassroomListResponseDto.builder()
+                .classrooms(classrooms)
+                .build();
+    }
+
+    /**
      * 특정 강의실의 상세 정보, 현재 사용 상태, 즐겨찾기 여부, 리뷰 요약 정보를 조회한다.
      */
+    @Transactional
     public ClassroomDetailResponseDto getClassroomDetail(Long userId, Long classroomId) {
         Classroom classroom = classroomRepository.findByIdWithBuilding(classroomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의실입니다."));
+
+        recordClassroomView(userId, classroom);
 
         boolean isFavorite = favoriteRepository.existsByUser_UserIdAndClassroom_ClassroomId(
                 userId,
@@ -187,6 +254,23 @@ public class ClassroomService {
                                 .build())
                         .build())
                 .build();
+    }
+
+    /**
+     * 강의실 상세 조회 이력을 생성하거나 최신 조회 시각으로 갱신한다.
+     */
+    private void recordClassroomView(Long userId, Classroom classroom) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        classroomViewHistoryRepository.findByUser_UserIdAndClassroom_ClassroomId(
+                        userId,
+                        classroom.getClassroomId()
+                )
+                .ifPresentOrElse(
+                        ClassroomViewHistory::updateViewedAt,
+                        () -> classroomViewHistoryRepository.save(ClassroomViewHistory.create(user, classroom))
+                );
     }
 
     /**
