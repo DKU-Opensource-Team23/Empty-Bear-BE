@@ -263,14 +263,22 @@ public class ClassroomService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        classroomViewHistoryRepository.findByUser_UserIdAndClassroom_ClassroomId(
-                        userId,
-                        classroom.getClassroomId()
-                )
-                .ifPresentOrElse(
-                        ClassroomViewHistory::updateViewedAt,
-                        () -> classroomViewHistoryRepository.save(ClassroomViewHistory.create(user, classroom))
-                );
+        try {
+            classroomViewHistoryRepository.findByUser_UserIdAndClassroom_ClassroomId(
+                            userId,
+                            classroom.getClassroomId()
+                    )
+                    .ifPresentOrElse(
+                            ClassroomViewHistory::updateViewedAt,
+                            () -> classroomViewHistoryRepository.saveAndFlush(ClassroomViewHistory.create(user, classroom))
+                    );
+        } catch (DataIntegrityViolationException e) {
+            classroomViewHistoryRepository.findByUser_UserIdAndClassroom_ClassroomId(
+                            userId,
+                            classroom.getClassroomId()
+                    )
+                    .ifPresent(ClassroomViewHistory::updateViewedAt);
+        }
     }
 
     /**
