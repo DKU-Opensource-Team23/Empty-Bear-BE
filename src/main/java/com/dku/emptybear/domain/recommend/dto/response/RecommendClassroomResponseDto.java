@@ -17,6 +17,9 @@ public class RecommendClassroomResponseDto {
     @Builder
     public static class ClassroomDto {
 
+        @Schema(description = "강의실 고유 ID", example = "12")
+        private Long classroomId;
+
         @Schema(description = "건물명", example = "소프트웨어ICT관")
         private String buildingName;
 
@@ -34,5 +37,11 @@ public class RecommendClassroomResponseDto {
 
         @Schema(description = "콘센트 여부", example = "true")
         private Boolean hasOutlet;
+
+        @Schema(description = "로그인 사용자의 즐겨찾기 여부", example = "false")
+        private Boolean isFavorite;
+
+        @Schema(description = "현재 사용 상태 구분값", example = "AVAILABLE_LONG")
+        private String availabilityStatus;
     }
 }

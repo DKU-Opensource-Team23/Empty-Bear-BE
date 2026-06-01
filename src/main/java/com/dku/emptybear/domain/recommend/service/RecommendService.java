@@ -112,12 +112,15 @@ public class RecommendService {
 
         RecommendClassroomResponseDto.ClassroomDto response =
                 RecommendClassroomResponseDto.ClassroomDto.builder()
+                        .classroomId(classroom.getClassroomId())
                         .buildingName(classroom.getBuilding().getBuildingName())
                         .classroomName(classroom.getRoomName())
                         .availableHour(toAvailableHour(availability.availableMinutes()))
                         .availableMinute(toAvailableMinute(availability.availableMinutes()))
                         .nextClassTime(formatTime(availability))
                         .hasOutlet(classroom.getHasOutlet())
+                        .isFavorite(favorite)
+                        .availabilityStatus(availability.availabilityStatus())
                         .build();
 
         return Optional.of(new RecommendCandidate(response, score));
