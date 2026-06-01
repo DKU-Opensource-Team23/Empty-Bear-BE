@@ -18,7 +18,7 @@ import java.util.Locale;
 public class ClassroomAvailabilityService {
 
     private static final int AVAILABLE_LONG_THRESHOLD_MINUTES = 30;
-    private static final LocalTime END_OF_DAY = LocalTime.of(23, 59);
+    private static final LocalTime END_OF_DAY = LocalTime.of(22, 0);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
@@ -51,7 +51,7 @@ public class ClassroomAvailabilityService {
             }
         }
 
-        int availableMinutes = calculateMinutesBetween(now, END_OF_DAY);
+        int availableMinutes = Math.max(calculateMinutesBetween(now, END_OF_DAY), 0);
 
         return new ClassroomAvailability(
                 resolveAvailableStatus(availableMinutes),
@@ -81,6 +81,10 @@ public class ClassroomAvailabilityService {
     }
 
     private String resolveAvailableStatus(int availableMinutes) {
+        if (availableMinutes <= 0) {
+            return "UNAVAILABLE";
+        }
+
         if (availableMinutes >= AVAILABLE_LONG_THRESHOLD_MINUTES) {
             return "AVAILABLE_LONG";
         }
