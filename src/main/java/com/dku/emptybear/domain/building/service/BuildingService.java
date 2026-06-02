@@ -96,6 +96,7 @@ public class BuildingService {
                     return FloorClassroomStatusResponseDto.ClassroomStatusDto.builder()
                             .classroomId(classroom.getClassroomId())
                             .roomName(classroom.getRoomName())
+                            .hasOutlet(classroom.getHasOutlet())
                             .mapX(classroom.getMapX())
                             .mapY(classroom.getMapY())
                             .availabilityStatus(availability.status())

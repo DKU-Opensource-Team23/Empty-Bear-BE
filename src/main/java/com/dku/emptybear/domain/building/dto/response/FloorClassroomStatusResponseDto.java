@@ -37,6 +37,9 @@ public class FloorClassroomStatusResponseDto {
         @Schema(description = "강의실 호수", example = "516")
         private String roomName;
 
+        @Schema(description = "콘센트 여부", example = "true")
+        private Boolean hasOutlet;
+
         @Schema(description = "평면도 이미지 기준 가로 비율 좌표", example = "0.4210")
         private BigDecimal mapX;
 
